@@ -192,36 +192,17 @@ class HomeScreenRobot {
     fun verifyRecentlyVisitedSearchGroupDisplayed(shouldBeDisplayed: Boolean, searchTerm: String, groupSize: Int) {
         // checks if the search group exists in the Recently visited section
         if (shouldBeDisplayed) {
-            recentlyVisitedList.waitForExists(waitingTime)
             scrollToElementByText("Recently visited")
-            recentlyVisitedList.getChildByText(UiSelector().text(searchTerm), searchTerm, true)
-                .waitForExists(waitingTimeShort)
             assertTrue(
                 mDevice.findObject(UiSelector().text(searchTerm))
                     .getFromParent(UiSelector().text("$groupSize sites"))
                     .waitForExists(waitingTimeShort),
             )
         } else {
-            assertFalse(
+            assertTrue(
                 mDevice.findObject(UiSelector().text(searchTerm))
                     .getFromParent(UiSelector().text("$groupSize sites"))
-                    .waitForExists(waitingTimeShort),
-            )
-        }
-    }
-
-    fun verifyCurrentSearchGroupIsDisplayed(shouldBeDisplayed: Boolean, searchTerm: String, groupSize: Int = 0) {
-        // checks search group in the Jump back in section
-        if (shouldBeDisplayed) {
-            assertTrue(
-                mDevice.findObject(UiSelector().text("""Your search for "$searchTerm""""))
-                    .getFromParent(UiSelector().textContains("$groupSize sites"))
-                    .waitForExists(waitingTimeShort),
-            )
-        } else {
-            assertFalse(
-                mDevice.findObject(UiSelector().text("""Your search for "$searchTerm""""))
-                    .waitForExists(waitingTimeShort),
+                    .waitUntilGone(waitingTimeShort),
             )
         }
     }
@@ -333,7 +314,7 @@ class HomeScreenRobot {
     fun getSponsoredShortcutTitle(position: Int): String {
         val sponsoredShortcut = mDevice.findObject(
             UiSelector()
-                .className("android.widget.FrameLayout")
+                .resourceId("$packageName:id/top_site_item")
                 .index(position - 1),
         ).getChild(
             UiSelector()
@@ -580,7 +561,8 @@ class HomeScreenRobot {
         }
 
         fun openRecentlyVisitedSearchGroupHistoryList(title: String, interact: HistoryRobot.() -> Unit): HistoryRobot.Transition {
-            val searchGroup = recentlyVisitedList.getChildByText(UiSelector().text(title), title, true)
+            scrollToElementByText("Recently visited")
+            val searchGroup = mDevice.findObject(UiSelector().text(title))
             searchGroup.waitForExists(waitingTimeShort)
             searchGroup.click()
 
@@ -706,9 +688,11 @@ private fun assertStartSyncHeader() {
     onView(allOf(withText(R.string.onboarding_account_sign_in_header)))
         .check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
 }
-private fun assertAccountsSignInButton() =
+private fun assertAccountsSignInButton() {
+    scrollToElementByText(getStringResource(R.string.onboarding_firefox_account_sign_in))
     onView(ViewMatchers.withResourceName("fxa_sign_in_button"))
         .check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
+}
 
 private fun assertChooseThemeHeader() {
     scrollToElementByText("Choose your theme")
@@ -859,7 +843,7 @@ private fun assertSponsoredSubtitleIsDisplayed(position: Int) =
     assertTrue(
         mDevice.findObject(
             UiSelector()
-                .className("android.widget.FrameLayout")
+                .resourceId("$packageName:id/top_site_item")
                 .index(position - 1),
         ).getChild(
             UiSelector()
@@ -871,7 +855,7 @@ private fun assertSponsoredShortcutTitle(sponsoredShortcutTitle: String, positio
     assertTrue(
         mDevice.findObject(
             UiSelector()
-                .className("android.widget.FrameLayout")
+                .resourceId("$packageName:id/top_site_item")
                 .index(position - 1),
         ).getChild(
             UiSelector()
