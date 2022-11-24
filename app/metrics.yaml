@@ -198,6 +198,35 @@ events:
       - android-probes@mozilla.com
       - kbrosnan@mozilla.com
     expires: never
+  default_browser_notif_shown:
+    type: event
+    description: |
+      Default browser notification was shown to the user
+    bugs:
+      - https://github.com/mozilla-mobile/fenix/issues/27779
+    data_reviews:
+      - https://github.com/mozilla-mobile/fenix/pull/27780
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 122
+  marketing_notification_allowed:
+    type: boolean
+    description: |
+      True if marketing notifications are allowed, otherwise false.
+    bugs:
+      - https://github.com/mozilla-mobile/fenix/issues/27795
+    data_reviews:
+      - https://github.com/mozilla-mobile/fenix/pull/27797
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 122
+    metadata:
+      tags:
+        - Notifications
   toolbar_menu_visible:
     type: event
     description: |
@@ -462,6 +491,23 @@ events:
       - https://github.com/mozilla-mobile/fenix/pull/27257
     data_sensitivity:
       - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 122
+    metadata:
+      tags:
+        - Sharing
+  save_to_pdf_failure:
+    type: event
+    description: |
+      A user tapped the save pdf but an error ocurred
+      and the process failed.
+    bugs:
+      - https://github.com/mozilla-mobile/fenix/issues/27635
+    data_reviews:
+      - https://github.com/mozilla-mobile/fenix/pull/27661#issuecomment-1300505370
+    data_sensitivity:
+      - technical
     notification_emails:
       - android-probes@mozilla.com
     expires: 122
@@ -1059,6 +1105,7 @@ metrics:
       to identify installs from Mozilla Online.
     send_in_pings:
       - metrics
+      - baseline
     bugs:
       - https://github.com/mozilla-mobile/fenix/issues/16075
     data_reviews:
@@ -1070,6 +1117,8 @@ metrics:
       - android-probes@mozilla.com
       - kbrosnan@mozilla.com
     expires: never
+    no_lint:
+      - BASELINE_PING
     metadata:
       tags:
         - China
@@ -1298,6 +1347,7 @@ metrics:
       `other` option for the source but it should never enter on this case.
     send_in_pings:
       - metrics
+      - baseline
     bugs:
       - https://github.com/mozilla-mobile/fenix/issues/1158
       - https://github.com/mozilla-mobile/fenix/issues/6556
@@ -1316,6 +1366,8 @@ metrics:
       - android-probes@mozilla.com
       - kbrosnan@mozilla.com
     expires: never
+    no_lint:
+      - BASELINE_PING
     metadata:
       tags:
         - Search
@@ -1719,6 +1771,24 @@ metrics:
     metadata:
       tags:
         - Wallpapers
+  notifications_allowed:
+    type: boolean
+    description: |
+      True if notifications are allowed, otherwise false.
+    send_in_pings:
+      - metrics
+    bugs:
+      - https://github.com/mozilla-mobile/fenix/issues/27795
+    data_reviews:
+      - https://github.com/mozilla-mobile/fenix/pull/27797
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 122
+    metadata:
+      tags:
+        - Notifications
 
 customize_home:
   most_visited_sites:
@@ -2347,6 +2417,7 @@ search.default_engine:
       value will be "custom"
     send_in_pings:
       - metrics
+      - baseline
     bugs:
       - https://github.com/mozilla-mobile/fenix/issues/800
     data_reviews:
@@ -2363,6 +2434,8 @@ search.default_engine:
       - android-probes@mozilla.com
       - kbrosnan@mozilla.com
     expires: never
+    no_lint:
+      - BASELINE_PING
   name:
     type: string
     lifetime: application
@@ -2373,6 +2446,7 @@ search.default_engine:
       value will be "custom"
     send_in_pings:
       - metrics
+      - baseline
     bugs:
       - https://github.com/mozilla-mobile/fenix/issues/800
     data_reviews:
@@ -2389,6 +2463,8 @@ search.default_engine:
       - android-probes@mozilla.com
       - kbrosnan@mozilla.com
     expires: never
+    no_lint:
+      - BASELINE_PING
   search_url:
     type: url
     lifetime: application
@@ -5864,6 +5940,28 @@ pocket:
     metadata:
       tags:
         - PocketIntegration
+  spoc_shim:
+    type: text
+    description: |
+      Shim data of the Pocket sponsored story the user just
+      interacted with.
+      The shim is a unique base64 string identifying each story and
+      type of user interaction: story impression or click.
+    bugs:
+      - https://github.com/mozilla-mobile/fenix/issues/27549
+      - https://mozilla-hub.atlassian.net/browse/FNXV2-21791
+    data_reviews:
+      - https://github.com/mozilla-mobile/fenix/pull/27550#issuecomment-1295027631
+    data_sensitivity:
+      - web_activity
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+    send_in_pings:
+      - spoc
+    metadata:
+      tags:
+        - PocketIntegration
   home_recs_spoc_shown:
     type: event
     description: |
@@ -6108,6 +6206,7 @@ browser.search:
       The key format is `<provider-name>`.
     send_in_pings:
       - metrics
+      - baseline
     bugs:
       - https://github.com/mozilla-mobile/fenix/issues/6558
     data_reviews:
@@ -6122,6 +6221,8 @@ browser.search:
       - android-probes@mozilla.com
       - kbrosnan@mozilla.com
     expires: never
+    no_lint:
+      - BASELINE_PING
   ad_clicks:
     type: labeled_counter
     description: |
@@ -6129,6 +6230,7 @@ browser.search:
       The key format is `<provider-name>`.
     send_in_pings:
       - metrics
+      - baseline
     bugs:
       - https://github.com/mozilla-mobile/fenix/issues/6558
     data_reviews:
@@ -6143,12 +6245,15 @@ browser.search:
       - android-probes@mozilla.com
       - kbrosnan@mozilla.com
     expires: never
+    no_lint:
+      - BASELINE_PING
   in_content:
     type: labeled_counter
     description: |
       Records the type of interaction a user has on SERP pages.
     send_in_pings:
       - metrics
+      - baseline
     bugs:
       - https://github.com/mozilla-mobile/fenix/issues/6557
     data_reviews:
@@ -6163,6 +6268,8 @@ browser.search:
       - android-probes@mozilla.com
       - kbrosnan@mozilla.com
     expires: never
+    no_lint:
+      - BASELINE_PING
 
 addons:
   open_addons_in_settings:
@@ -6690,6 +6797,45 @@ autoplay:
     metadata:
       tags:
         - SitePermissions
+
+cookie_banners:
+  visited_setting:
+    type: event
+    description: A user visited the cookie banner handling screen
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1796146
+    data_reviews:
+      - https://github.com/mozilla-mobile/fenix/pull/27561
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 118
+    metadata:
+      tags:
+        - Privacy&Security
+  setting_changed:
+    type: event
+    description: |
+      A user changed their setting.
+    extra_keys:
+      cookie_banner_setting:
+        description: |
+          The new setting for cookie banners: disabled,reject_all,
+          or reject_or_accept_all.
+        type: string
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1796146
+    data_reviews:
+      - https://github.com/mozilla-mobile/fenix/pull/27561
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 118
+    metadata:
+      tags:
+        - Privacy&Security
 
 site_permissions:
   prompt_shown:
@@ -8439,3 +8585,31 @@ recent_synced_tabs:
     data_sensitivity:
       - interaction
     expires: 114
+review_prompt:
+  prompt_attempt:
+    type: event
+    description: |
+      Data captured for each attempt to display the review prompt.
+    extra_keys:
+      prompt_was_displayed:
+        description: |
+          Whether the prompt was displayed to the user. Value
+          reported will be: 'true', 'false' or 'error'.
+        type: string
+      local_datetime:
+        description: |
+          The local datetime.
+        type: string
+      number_of_app_launches:
+        description: |
+          The total number of times the app has been launched.
+        type: quantity
+    bugs:
+      - https://github.com/mozilla-mobile/fenix/issues/27472
+    data_reviews:
+      - https://github.com/mozilla-mobile/fenix/pull/27596
+    notification_emails:
+      - android-probes@mozilla.com
+    data_sensitivity:
+      - interaction
+    expires: 121

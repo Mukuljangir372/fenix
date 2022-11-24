@@ -154,6 +154,7 @@ class SearchDialogFragment : AppCompatDialogFragment(), UserInteractionHandler {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return object : Dialog(requireContext(), this.theme) {
+            @Deprecated("Deprecated in Java")
             override fun onBackPressed() {
                 this@SearchDialogFragment.onBackPressed()
             }
@@ -178,6 +179,9 @@ class SearchDialogFragment : AppCompatDialogFragment(), UserInteractionHandler {
                 tabId = args.sessionId,
                 pastedText = args.pastedText,
                 searchAccessPoint = args.searchAccessPoint,
+                searchEngine = requireComponents.core.store.state.search.searchEngines.firstOrNull {
+                    it.id == args.searchEngine
+                },
             ),
         )
 
@@ -296,7 +300,12 @@ class SearchDialogFragment : AppCompatDialogFragment(), UserInteractionHandler {
             flow.map { state -> state.search }
                 .ifChanged()
                 .collect { search ->
-                    store.dispatch(SearchFragmentAction.UpdateSearchState(search))
+                    store.dispatch(
+                        SearchFragmentAction.UpdateSearchState(
+                            search,
+                            showUnifiedSearchFeature,
+                        ),
+                    )
 
                     updateSearchSelectorMenu(search.searchEngines)
                 }
@@ -512,6 +521,12 @@ class SearchDialogFragment : AppCompatDialogFragment(), UserInteractionHandler {
 
     override fun onResume() {
         super.onResume()
+
+        qrFeature.get()?.let {
+            if (it.isScanInProgress) {
+                it.scan(binding.searchWrapper.id)
+            }
+        }
 
         view?.post {
             // We delay querying the clipboard by posting this code to the main thread message queue,
@@ -730,9 +745,9 @@ class SearchDialogFragment : AppCompatDialogFragment(), UserInteractionHandler {
                 ) {
                     interactor.onMenuItemTapped(SearchSelectorMenu.Item.SearchEngine(it))
                 }
-            } + searchSelectorMenu.menuItems()
+            }
 
-        searchSelectorMenu.menuController.submitList(searchEngineList)
+        searchSelectorMenu.menuController.submitList(searchSelectorMenu.menuItems(searchEngineList))
         toolbarView.view.invalidateActions()
     }
 
