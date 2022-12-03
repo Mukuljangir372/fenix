@@ -20,7 +20,7 @@ object Versions {
     const val detekt = "1.19.0"
     const val jna = "5.12.1"
 
-    const val androidx_compose = "1.2.1"
+    const val androidx_compose = "1.3.1"
     const val androidx_compose_compiler = "1.3.2"
     const val androidx_appcompat = "1.3.0"
     const val androidx_benchmark = "1.0.0"
@@ -59,7 +59,7 @@ object Versions {
 
     const val google_play_review_version = "2.0.0"
 
-    const val protobuf = "3.21.7" // keep in sync with the version used in AS.
+    const val protobuf = "3.21.10" // keep in sync with the version used in AS.
 }
 
 @Suppress("unused")
@@ -227,6 +227,7 @@ object Deps {
 
     const val junit = "junit:junit:${Versions.junit}"
     const val mockk = "io.mockk:mockk:${Versions.mockk}"
+    const val mockk_android = "io.mockk:mockk-android:${Versions.mockk}"
 
     // --- START AndroidX test dependencies --- //
     // N.B.: the versions of these dependencies appear to be pinned together. To avoid bugs, they
