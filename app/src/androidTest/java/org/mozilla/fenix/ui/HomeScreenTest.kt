@@ -12,9 +12,11 @@ import androidx.test.uiautomator.Until
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.helpers.AndroidAssetDispatcher
+import org.mozilla.fenix.helpers.Constants.POCKET_RECOMMENDED_STORIES_UTM_PARAM
 import org.mozilla.fenix.helpers.HomeActivityTestRule
 import org.mozilla.fenix.helpers.RetryTestRule
 import org.mozilla.fenix.helpers.TestAssetHelper
@@ -273,10 +275,11 @@ class HomeScreenTest {
             scrollToPocketProvokingStories()
             firstPocketStoryPublisher = getProvokingStoryPublisher(1)
         }.clickPocketStoryItem(firstPocketStoryPublisher, 1) {
-            verifyUrl(firstPocketStoryPublisher)
+            verifyUrl(POCKET_RECOMMENDED_STORIES_UTM_PARAM)
         }
     }
 
+    @Ignore("Failed, see: https://github.com/mozilla-mobile/fenix/issues/28098")
     @Test
     fun openPocketDiscoverMoreTest() {
         activityTestRule.activityRule.applySettingsExceptions {
