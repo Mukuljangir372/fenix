@@ -66,10 +66,14 @@
 
     <!-- Private mode shortcut "contextual feature recommendation" (CFR) -->
     <!-- Text for the main message -->
-    <string name="cfr_message">ניתן להוסיף קיצור דרך לפתיחת לשוניות פרטיות ממסך הבית.</string>
+    <string moz:removedIn="109" name="cfr_message" tools:ignore="UnusedResources">ניתן להוסיף קיצור דרך לפתיחת לשוניות פרטיות ממסך הבית.</string>
+    <!-- Text for the Private mode shortcut CFR message for adding a private mode shortcut to open private tabs from the Home screen -->
+    <string name="private_mode_cfr_message">פתיחת הלשונית הפרטית הבאה בהקשה אחת.</string>
     <!-- Text for the positive button -->
-    <string name="cfr_pos_button_text">הוספת קיצור דרך</string>
-    <!-- Text for the negative button -->
+    <string moz:removedIn="109" name="cfr_pos_button_text" tools:ignore="UnusedResources">הוספת קיצור דרך</string>
+    <!-- Text for the positive button to accept adding a Private Browsing shortcut to the Home screen -->
+    <string name="private_mode_cfr_pos_button_text">הוספה למסך הבית</string>
+    <!-- Text for the negative button to decline adding a Private Browsing shortcut to the Home screen -->
     <string name="cfr_neg_button_text">לא תודה</string>
 
     <!-- Open in App "contextual feature recommendation" (CFR) -->
@@ -1053,8 +1057,6 @@
     <string name="share_copy_link_to_clipboard">העתקה ללוח העריכה</string>
     <!-- Toast shown after copying link to clipboard -->
     <string name="toast_copy_link_to_clipboard">הועתק ללוח</string>
-    <!-- An option from the three dot menu to into sync -->
-    <string moz:removedIn="107" name="sync_menu_sign_in" tools:ignore="UnusedResources">כניסה כדי לסנכרן</string>
     <!-- An option from the share dialog to sign into sync -->
     <string name="sync_sign_in">התחברות אל Sync</string>
      <!-- An option from the three dot menu to sync and save data -->
@@ -1868,6 +1870,15 @@
     <!-- Text for the snackbar to confirm auto-close is enabled for inactive tabs -->
     <string name="inactive_tabs_auto_close_message_snackbar">סגירה אוטומטית מופעלת</string>
 
+    <!-- Awesome bar suggestion's headers -->
+    <!-- Search suggestions title for Firefox Suggest. -->
+    <string name="firefox_suggest_header">הצעות של Firefox</string>
+
+    <!-- Title for search suggestions when Google is the default search suggestion engine. -->
+    <string name="google_search_engine_suggestion_header">חיפוש ב־Google</string>
+    <!-- Title for search suggestions when the default search suggestion engine is anything other than Google. The first parameter is default search engine name. -->
+    <string name="other_default_search_engine_suggestion_header">חיפוש ב־%s</string>
+
     <!-- Default browser experiment -->
     <string name="default_browser_experiment_card_text">הגדרת קישורים מאתרים, מהודעות דוא״ל ומהודעות לפתיחה אוטומטית ב־Firefox.</string>
 
@@ -1906,7 +1917,6 @@
     <string name="experiments_snackbar">יש להפעיל טלמטריה כדי לשלוח נתונים.</string>
     <!-- Snackbar button text to navigate to telemetry settings.-->
     <string name="experiments_snackbar_button">מעבר להגדרות</string>
-    <string name="firefox_suggest_header">הצעות של Firefox</string>
 
     <!-- Accessibility services actions labels. These will be appended to accessibility actions like "Double tap to.." but not by or applications but by services like Talkback. -->
     <!-- Action label for elements that can be collapsed if interacting with them. Talkback will append this to say "Double tap to collapse". -->
