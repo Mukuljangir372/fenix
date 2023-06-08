@@ -11,24 +11,28 @@ import androidx.compose.material.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.getColor
+import androidx.navigation.findNavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.transformWhile
 import mozilla.components.browser.state.selector.findCustomTabOrSelectedTab
+import mozilla.components.browser.state.selector.selectedTab
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.browser.toolbar.BrowserToolbar
+import mozilla.components.compose.cfr.CFRPopup
+import mozilla.components.compose.cfr.CFRPopup.PopupAlignment.INDICATOR_CENTERED_IN_ANCHOR
+import mozilla.components.compose.cfr.CFRPopupProperties
 import mozilla.components.lib.state.ext.flowScoped
 import mozilla.components.service.glean.private.NoExtras
 import org.mozilla.fenix.GleanMetrics.TrackingProtection
 import org.mozilla.fenix.R
-import org.mozilla.fenix.compose.cfr.CFRPopup
-import org.mozilla.fenix.compose.cfr.CFRPopup.PopupAlignment.INDICATOR_CENTERED_IN_ANCHOR
-import org.mozilla.fenix.compose.cfr.CFRPopupProperties
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.settings.SupportUtils
 import org.mozilla.fenix.settings.SupportUtils.SumoTopic.TOTAL_COOKIE_PROTECTION
+import org.mozilla.fenix.settings.quicksettings.protections.cookiebanners.dialog.CookieBannerReEngagementDialogUtils
 import org.mozilla.fenix.theme.FirefoxTheme
 import org.mozilla.fenix.utils.Settings
 
@@ -93,48 +97,76 @@ class BrowserToolbarCFRPresenter(
     @VisibleForTesting
     internal fun showTcpCfr() {
         CFRPopup(
-            text = context.getString(R.string.tcp_cfr_message),
             anchor = toolbar.findViewById(
                 R.id.mozac_browser_toolbar_security_indicator,
             ),
             properties = CFRPopupProperties(
                 popupAlignment = INDICATOR_CENTERED_IN_ANCHOR,
+                popupBodyColors = listOf(
+                    getColor(context, R.color.fx_mobile_layer_color_gradient_end),
+                    getColor(context, R.color.fx_mobile_layer_color_gradient_start),
+                ),
+                popupVerticalOffset = CFR_TO_ANCHOR_VERTICAL_PADDING.dp,
+                dismissButtonColor = getColor(context, R.color.fx_mobile_icon_color_oncolor),
                 indicatorDirection = if (settings.toolbarPosition == ToolbarPosition.TOP) {
                     CFRPopup.IndicatorDirection.UP
                 } else {
                     CFRPopup.IndicatorDirection.DOWN
                 },
-                popupVerticalOffset = CFR_TO_ANCHOR_VERTICAL_PADDING.dp,
             ),
             onDismiss = {
                 when (it) {
                     true -> TrackingProtection.tcpCfrExplicitDismissal.record(NoExtras())
                     false -> TrackingProtection.tcpCfrImplicitDismissal.record(NoExtras())
                 }
+                tryToShowCookieBannerDialogIfNeeded()
             },
-        ) {
-            Text(
-                text = context.getString(R.string.tcp_cfr_learn_more),
-                color = FirefoxTheme.colors.textOnColorPrimary,
-                modifier = Modifier.clickable {
-                    context.components.useCases.tabsUseCases.selectOrAddTab.invoke(
-                        SupportUtils.getSumoURLForTopic(
-                            context,
-                            TOTAL_COOKIE_PROTECTION,
+            text = {
+                FirefoxTheme {
+                    Text(
+                        text = context.getString(R.string.tcp_cfr_message),
+                        color = FirefoxTheme.colors.textOnColorPrimary,
+                        style = FirefoxTheme.typography.body2,
+                    )
+                }
+            },
+            action = {
+                FirefoxTheme {
+                    Text(
+                        text = context.getString(R.string.tcp_cfr_learn_more),
+                        color = FirefoxTheme.colors.textOnColorPrimary,
+                        modifier = Modifier.clickable {
+                            context.components.useCases.tabsUseCases.selectOrAddTab.invoke(
+                                SupportUtils.getSumoURLForTopic(
+                                    context,
+                                    TOTAL_COOKIE_PROTECTION,
+                                ),
+                            )
+                            TrackingProtection.tcpSumoLinkClicked.record(NoExtras())
+                            tcpCfrPopup?.dismiss()
+                        },
+                        style = FirefoxTheme.typography.body2.copy(
+                            textDecoration = TextDecoration.Underline,
                         ),
                     )
-                    TrackingProtection.tcpSumoLinkClicked.record(NoExtras())
-                    tcpCfrPopup?.dismiss()
-                },
-                style = FirefoxTheme.typography.body2.copy(
-                    textDecoration = TextDecoration.Underline,
-                ),
-            )
-        }.run {
+                }
+            },
+        ).run {
             settings.shouldShowTotalCookieProtectionCFR = false
             tcpCfrPopup = this
             show()
             TrackingProtection.tcpCfrShown.record(NoExtras())
+        }
+    }
+
+    @VisibleForTesting
+    internal fun tryToShowCookieBannerDialogIfNeeded() {
+        browserStore.state.selectedTab?.let { tab ->
+            CookieBannerReEngagementDialogUtils.tryToShowReEngagementDialog(
+                settings = settings,
+                status = tab.cookieBanner,
+                navController = toolbar.findNavController(),
+            )
         }
     }
 }

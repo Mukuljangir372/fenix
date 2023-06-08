@@ -45,6 +45,7 @@ import org.mozilla.fenix.GleanMetrics.SearchShortcuts
 import org.mozilla.fenix.GleanMetrics.UnifiedSearch
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
+import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.components.Core
 import org.mozilla.fenix.components.metrics.MetricsUtils
 import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
@@ -223,13 +224,18 @@ class SearchDialogControllerTest {
     @Test
     fun handleEditingCancelled() = runTest {
         var clearToolbarFocusInvoked = false
+        var dismissAndGoBack = false
         createController(
             clearToolbarFocus = {
                 clearToolbarFocusInvoked = true
             },
+            dismissDialogAndGoBack = {
+                dismissAndGoBack = true
+            },
         ).handleEditingCancelled()
 
         assertTrue(clearToolbarFocusInvoked)
+        assertTrue(dismissAndGoBack)
     }
 
     @Test
@@ -370,6 +376,8 @@ class SearchDialogControllerTest {
     @Test
     fun handleSearchShortcutEngineSelected() {
         val searchEngine: SearchEngine = mockk(relaxed = true)
+        val browsingMode = BrowsingMode.Private
+        every { activity.browsingModeManager.mode } returns browsingMode
 
         var focusToolbarInvoked = false
         createController(
@@ -379,7 +387,7 @@ class SearchDialogControllerTest {
         ).handleSearchShortcutEngineSelected(searchEngine)
 
         assertTrue(focusToolbarInvoked)
-        verify { store.dispatch(SearchFragmentAction.SearchShortcutEngineSelected(searchEngine, settings)) }
+        verify { store.dispatch(SearchFragmentAction.SearchShortcutEngineSelected(searchEngine, browsingMode, settings)) }
 
         assertNotNull(SearchShortcuts.selected.testGetValue())
         val recordedEvents = SearchShortcuts.selected.testGetValue()!!
@@ -552,6 +560,7 @@ class SearchDialogControllerTest {
         focusToolbar: () -> Unit = { },
         clearToolbar: () -> Unit = { },
         dismissDialog: () -> Unit = { },
+        dismissDialogAndGoBack: () -> Unit = { },
     ): SearchDialogController {
         return SearchDialogController(
             activity = activity,
@@ -564,6 +573,7 @@ class SearchDialogControllerTest {
             clearToolbarFocus = clearToolbarFocus,
             focusToolbar = focusToolbar,
             clearToolbar = clearToolbar,
+            dismissDialogAndGoBack = dismissDialogAndGoBack,
         )
     }
 }

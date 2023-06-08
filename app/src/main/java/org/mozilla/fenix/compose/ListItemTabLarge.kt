@@ -4,10 +4,10 @@
 
 package org.mozilla.fenix.compose
 
-import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,13 +18,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.mozilla.fenix.compose.annotation.LightDarkPreview
 import org.mozilla.fenix.theme.FirefoxTheme
 
 /**
@@ -125,6 +126,7 @@ fun ListItemTabLarge(
  *
  * @param imageUrl URL from where the to download a header image of the tab this composable renders.
  * @param backgroundColor Background [Color] of the item.
+ * @param contentPadding Padding used for the image and details of the item.
  * @param onClick Optional callback to be invoked when this composable is clicked.
  * @param tabDetails [Composable] Displayed to the the end of the image. Allows for variation in the item text style.
  */
@@ -132,6 +134,7 @@ fun ListItemTabLarge(
 fun ListItemTabSurface(
     imageUrl: String,
     backgroundColor: Color = FirefoxTheme.colors.layer2,
+    contentPadding: PaddingValues = PaddingValues(16.dp),
     onClick: (() -> Unit)? = null,
     tabDetails: @Composable () -> Unit,
 ) {
@@ -145,7 +148,8 @@ fun ListItemTabSurface(
         elevation = 6.dp,
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(contentPadding),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             val (imageWidth, imageHeight) = 116.dp to 84.dp
             val imageModifier = Modifier
@@ -167,8 +171,7 @@ fun ListItemTabSurface(
 }
 
 @Composable
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
+@LightDarkPreview
 private fun ListItemTabLargePreview() {
     FirefoxTheme {
         ListItemTabLarge(
@@ -180,8 +183,7 @@ private fun ListItemTabLargePreview() {
 }
 
 @Composable
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
+@LightDarkPreview
 private fun ListItemTabSurfacePreview() {
     FirefoxTheme {
         ListItemTabSurface(
@@ -197,8 +199,7 @@ private fun ListItemTabSurfacePreview() {
 }
 
 @Composable
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
+@LightDarkPreview
 private fun ListItemTabSurfaceWithCustomBackgroundPreview() {
     FirefoxTheme {
         ListItemTabSurface(

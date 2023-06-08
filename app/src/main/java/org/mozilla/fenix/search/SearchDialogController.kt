@@ -72,6 +72,7 @@ class SearchDialogController(
     private val clearToolbarFocus: () -> Unit,
     private val focusToolbar: () -> Unit,
     private val clearToolbar: () -> Unit,
+    private val dismissDialogAndGoBack: () -> Unit,
 ) : SearchController {
 
     override fun handleUrlCommitted(url: String, fromHomeScreen: Boolean) {
@@ -135,6 +136,7 @@ class SearchDialogController(
 
     override fun handleEditingCancelled() {
         clearToolbarFocus()
+        dismissDialogAndGoBack()
     }
 
     override fun handleTextChanged(text: String) {
@@ -215,10 +217,22 @@ class SearchDialogController(
                 fragmentStore.dispatch(SearchFragmentAction.SearchTabsEngineSelected(searchEngine))
             }
             searchEngine == store.state.search.selectedOrDefaultSearchEngine -> {
-                fragmentStore.dispatch(SearchFragmentAction.SearchDefaultEngineSelected(searchEngine, settings))
+                fragmentStore.dispatch(
+                    SearchFragmentAction.SearchDefaultEngineSelected(
+                        engine = searchEngine,
+                        browsingMode = activity.browsingModeManager.mode,
+                        settings = settings,
+                    ),
+                )
             }
             else -> {
-                fragmentStore.dispatch(SearchFragmentAction.SearchShortcutEngineSelected(searchEngine, settings))
+                fragmentStore.dispatch(
+                    SearchFragmentAction.SearchShortcutEngineSelected(
+                        engine = searchEngine,
+                        browsingMode = activity.browsingModeManager.mode,
+                        settings = settings,
+                    ),
+                )
             }
         }
 

@@ -28,6 +28,8 @@ import kotlinx.coroutines.launch
 import mozilla.appservices.Megazord
 import mozilla.components.browser.state.action.SystemAction
 import mozilla.components.browser.state.selector.selectedTab
+import mozilla.components.browser.state.state.searchEngines
+import mozilla.components.browser.state.state.selectedOrDefaultSearchEngine
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.browser.storage.sync.GlobalPlacesDependencyProvider
 import mozilla.components.concept.base.crash.Breadcrumb
@@ -61,6 +63,7 @@ import mozilla.components.support.webextensions.WebExtensionSupport
 import org.mozilla.fenix.GleanMetrics.Addons
 import org.mozilla.fenix.GleanMetrics.AndroidAutofill
 import org.mozilla.fenix.GleanMetrics.CustomizeHome
+import org.mozilla.fenix.GleanMetrics.Events.marketingNotificationAllowed
 import org.mozilla.fenix.GleanMetrics.GleanBuildInfo
 import org.mozilla.fenix.GleanMetrics.Metrics
 import org.mozilla.fenix.GleanMetrics.PerfStartup
@@ -73,14 +76,17 @@ import org.mozilla.fenix.components.appstate.AppAction
 import org.mozilla.fenix.components.metrics.MetricServiceType
 import org.mozilla.fenix.components.metrics.MozillaProductDetector
 import org.mozilla.fenix.components.toolbar.ToolbarPosition
+import org.mozilla.fenix.experiments.maybeFetchExperiments
+import org.mozilla.fenix.ext.areNotificationsEnabledSafe
 import org.mozilla.fenix.ext.containsQueryParameters
 import org.mozilla.fenix.ext.getCustomGleanServerUrlIfAvailable
 import org.mozilla.fenix.ext.isCustomEngine
 import org.mozilla.fenix.ext.isKnownSearchDomain
+import org.mozilla.fenix.ext.isNotificationChannelEnabled
 import org.mozilla.fenix.ext.setCustomEndpointIfAvailable
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.nimbus.FxNimbus
-import org.mozilla.fenix.onboarding.ensureMarketingChannelExists
+import org.mozilla.fenix.onboarding.MARKETING_CHANNEL_ID
 import org.mozilla.fenix.perf.MarkersActivityLifecycleCallbacks
 import org.mozilla.fenix.perf.ProfilerMarkerFactProcessor
 import org.mozilla.fenix.perf.StartupTimeline
@@ -203,6 +209,11 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         ProfilerMarkerFactProcessor.create { components.core.engine.profiler }.register()
 
         run {
+            // Make sure the engine is initialized and ready to use.
+            components.strictMode.resetAfter(StrictMode.allowThreadDiskReads()) {
+                components.core.engine.warmUp()
+            }
+
             // We need to always initialize Glean and do it early here.
             initializeGlean()
 
@@ -213,10 +224,6 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
             components.strictMode.enableStrictMode(true)
             warmBrowsersCache()
 
-            // Make sure the engine is initialized and ready to use.
-            components.strictMode.resetAfter(StrictMode.allowThreadDiskReads()) {
-                components.core.engine.warmUp()
-            }
             initializeWebExtensionSupport()
             if (FeatureFlags.storageMaintenanceFeature) {
                 // Make sure to call this function before registering a storage worker
@@ -251,6 +258,8 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         initVisualCompletenessQueueAndQueueTasks()
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(TelemetryLifecycleObserver(components.core.store))
+
+        components.analytics.metricsStorage.tryRegisterAsUsageRecorder(this)
 
         downloadWallpapers()
     }
@@ -368,12 +377,13 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
             }
         }
 
-        // For Android 13 or above, prompt the user for notification permission at the start.
-        // Regardless if the user accepts or denies the permission prompt, the prompt will occur only once.
-        fun queueNotificationPermissionRequest() {
-            if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                queue.runIfReadyOrQueue {
-                    ensureMarketingChannelExists(this)
+        @OptIn(DelicateCoroutinesApi::class) // GlobalScope usage
+        fun queueNimbusFetchInForeground() {
+            queue.runIfReadyOrQueue {
+                GlobalScope.launch(Dispatchers.IO) {
+                    components.analytics.experiments.maybeFetchExperiments(
+                        context = this@FenixApplication,
+                    )
                 }
             }
         }
@@ -387,7 +397,7 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         queueReviewPrompt()
         queueRestoreLocale()
         queueStorageMaintenance()
-        queueNotificationPermissionRequest()
+        queueNimbusFetchInForeground()
     }
 
     private fun startMetricsIfEnabled() {
@@ -465,11 +475,7 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         initializeRustErrors(components.analytics.crashReporter)
         // ... but RustHttpConfig.setClient() and RustLog.enable() can be called later.
 
-        // Once application-services has switched to using the new
-        // error reporting system, RustLog shouldn't input a CrashReporter
-        // anymore.
-        // (https://github.com/mozilla/application-services/issues/4981).
-        RustLog.enable(components.analytics.crashReporter)
+        RustLog.enable()
     }
 
     @OptIn(DelicateCoroutinesApi::class) // GlobalScope usage
@@ -482,7 +488,6 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
 
             // Now viaduct (the RustHttp client) is initialized we can ask Nimbus to fetch
             // experiments recipes from the server.
-            components.analytics.experiments.fetchExperiments()
         }
     }
 
@@ -555,6 +560,25 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
                         AppCompatDelegate.MODE_NIGHT_NO,
                     )
                     settings.shouldUseLightTheme = true
+                }
+            }
+        }
+    }
+
+    /**
+     * If unified search is enabled try to migrate the topic specific engine to the
+     * first general or custom search engine available.
+     */
+    @Suppress("NestedBlockDepth")
+    private fun migrateTopicSpecificSearchEngines() {
+        if (settings().showUnifiedSearchFeature) {
+            components.core.store.state.search.selectedOrDefaultSearchEngine.let { currentSearchEngine ->
+                if (currentSearchEngine?.isGeneral == false) {
+                    components.core.store.state.search.searchEngines.firstOrNull() { nextSearchEngine ->
+                        nextSearchEngine.isGeneral
+                    }?.let {
+                        components.useCases.searchUseCases.selectSearchEngine(it)
+                    }
                 }
             }
         }
@@ -734,14 +758,11 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
 
             defaultWallpaper.set(isDefaultTheCurrentWallpaper)
 
-            @Suppress("TooGenericExceptionCaught")
-            try {
-                notificationsAllowed.set(
-                    NotificationManagerCompat.from(applicationContext).areNotificationsEnabled(),
-                )
-            } catch (e: Exception) {
-                Logger.warn("Failed to check if notifications are enabled", e)
-            }
+            val notificationManagerCompat = NotificationManagerCompat.from(applicationContext)
+            notificationsAllowed.set(notificationManagerCompat.areNotificationsEnabledSafe())
+            marketingNotificationAllowed.set(
+                notificationManagerCompat.isNotificationChannelEnabled(MARKETING_CHANNEL_ID),
+            )
         }
 
         with(AndroidAutofill) {
@@ -766,6 +787,8 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
                         name.set("custom")
                     }
                 }
+
+                migrateTopicSpecificSearchEngines()
             }
         }
     }

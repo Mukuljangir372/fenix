@@ -62,6 +62,7 @@ class HomeScreenTest {
         mockWebServer.shutdown()
     }
 
+    @Ignore("Failing, see: https://bugzilla.mozilla.org/show_bug.cgi?id=1815275")
     @Test
     fun homeScreenItemsTest() {
         homeScreen { }.dismissOnboarding()
@@ -140,12 +141,13 @@ class HomeScreenTest {
             verifyJumpBackInShowAllButton()
         }.clickJumpBackInShowAllButton {
             verifyExistingOpenTabs(firstWebPage.title)
-        }.closeTabDrawer() {
+        }.closeTabDrawer {
         }
         homeScreen {
         }.clickJumpBackInItemWithTitle(firstWebPage.title) {
             verifyUrl(firstWebPage.url.toString())
             clickLinkMatchingText("Link 1")
+            verifyPageContent(secondWebPage.content)
         }.goToHomescreen {
             verifyJumpBackInSectionIsDisplayed()
             verifyJumpBackInItemTitle(secondWebPage.title)
@@ -158,81 +160,7 @@ class HomeScreenTest {
         }
     }
 
-    @Test
-    fun dismissOnboardingUsingSettingsTest() {
-        homeScreen {
-            verifyWelcomeHeader()
-        }.openThreeDotMenu {
-        }.openSettings {
-            verifyGeneralHeading()
-        }.goBack {
-            verifyExistingTopSitesList()
-        }
-    }
-
-    @Test
-    fun dismissOnboardingUsingBookmarksTest() {
-        homeScreen {
-            verifyWelcomeHeader()
-        }.openThreeDotMenu {
-        }.openBookmarks {
-            verifyBookmarksMenuView()
-            navigateUp()
-        }
-        homeScreen {
-            verifyExistingTopSitesList()
-        }
-    }
-
-    @Test
-    fun dismissOnboardingUsingHelpTest() {
-        activityTestRule.activityRule.applySettingsExceptions {
-            it.isJumpBackInCFREnabled = false
-            it.isWallpaperOnboardingEnabled = false
-        }
-
-        homeScreen {
-            verifyWelcomeHeader()
-        }.openThreeDotMenu {
-        }.openHelp {
-            verifyHelpUrl()
-        }.goBack {
-            verifyExistingTopSitesList()
-        }
-    }
-
-    @Test
-    fun dismissOnboardingWithPageLoadTest() {
-        activityTestRule.activityRule.applySettingsExceptions {
-            it.isJumpBackInCFREnabled = false
-            it.isWallpaperOnboardingEnabled = false
-        }
-
-        val defaultWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
-
-        homeScreen {
-            verifyWelcomeHeader()
-        }
-        navigationToolbar {
-        }.enterURLAndEnterToBrowser(defaultWebPage.url) {
-        }.goToHomescreen {
-            verifyExistingTopSitesList()
-        }
-    }
-
-    @Test
-    fun toolbarTapDoesntDismissOnboardingTest() {
-        homeScreen {
-            verifyWelcomeHeader()
-        }.openSearch {
-            verifyScanButton()
-            verifySearchEngineButton()
-            verifyKeyboardVisibility()
-        }.dismissSearchBar {
-            verifyWelcomeHeader()
-        }
-    }
-
+    @Ignore("Failing, see: https://bugzilla.mozilla.org/show_bug.cgi?id=1815276")
     @Test
     fun verifyPocketHomepageStoriesTest() {
         activityTestRule.activityRule.applySettingsExceptions {
@@ -299,6 +227,7 @@ class HomeScreenTest {
         }
     }
 
+    @Ignore("failing after a design refactor, see https://github.com/mozilla-mobile/fenix/issues/28472")
     @Test
     fun selectStoriesByTopicItemTest() {
         activityTestRule.activityRule.applySettingsExceptions {

@@ -6,6 +6,7 @@ package org.mozilla.fenix.components.metrics
 
 import androidx.annotation.VisibleForTesting
 import mozilla.components.browser.menu.facts.BrowserMenuFacts
+import mozilla.components.browser.toolbar.facts.ToolbarFacts
 import mozilla.components.concept.awesomebar.AwesomeBar
 import mozilla.components.feature.autofill.facts.AutofillFacts
 import mozilla.components.feature.awesomebar.facts.AwesomeBarFacts
@@ -42,6 +43,7 @@ import org.mozilla.fenix.GleanMetrics.BrowserSearch
 import org.mozilla.fenix.GleanMetrics.ContextMenu
 import org.mozilla.fenix.GleanMetrics.ContextualMenu
 import org.mozilla.fenix.GleanMetrics.CreditCards
+import org.mozilla.fenix.GleanMetrics.Events
 import org.mozilla.fenix.GleanMetrics.LoginDialog
 import org.mozilla.fenix.GleanMetrics.MediaNotification
 import org.mozilla.fenix.GleanMetrics.MediaState
@@ -147,6 +149,9 @@ internal class ReleaseMetricController(
                 else -> Unit
             }
         }
+        Component.BROWSER_TOOLBAR to ToolbarFacts.Items.MENU -> {
+            Events.toolbarMenuVisible.record(NoExtras())
+        }
         Component.FEATURE_CONTEXTMENU to ContextMenuFacts.Items.ITEM -> {
             metadata?.get("item")?.let { item ->
                 contextMenuAllowList[item]?.let { extraKey ->
@@ -241,6 +246,9 @@ internal class ReleaseMetricController(
         Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.OPENED_TAB_SUGGESTION_CLICKED -> {
             Awesomebar.openedTabSuggestionClicked.record(NoExtras())
         }
+        Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.SEARCH_TERM_SUGGESTION_CLICKED -> {
+            Awesomebar.searchTermSuggestionClicked.record(NoExtras())
+        }
         Component.FEATURE_CONTEXTMENU to ContextMenuFacts.Items.TEXT_SELECTION_OPTION -> {
             when (metadata?.get("textSelectionOption")?.toString()) {
                 CONTEXT_MENU_COPY -> ContextualMenu.copyTapped.record(NoExtras())
@@ -262,6 +270,7 @@ internal class ReleaseMetricController(
 
         Component.FEATURE_SEARCH to AdsTelemetry.SERP_ADD_CLICKED -> {
             BrowserSearch.adClicks[value!!].add()
+            track(Event.GrowthData.SerpAdClicked)
         }
         Component.FEATURE_SEARCH to AdsTelemetry.SERP_SHOWN_WITH_ADDS -> {
             BrowserSearch.withAds[value!!].add()

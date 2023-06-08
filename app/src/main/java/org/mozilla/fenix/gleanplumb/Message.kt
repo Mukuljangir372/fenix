@@ -5,6 +5,7 @@
 package org.mozilla.fenix.gleanplumb
 
 import org.mozilla.fenix.nimbus.MessageData
+import org.mozilla.fenix.nimbus.MessageSurfaceId
 import org.mozilla.fenix.nimbus.StyleData
 
 /**
@@ -33,6 +34,12 @@ data class Message(
     val priority: Int
         get() = style.priority
 
+    val surface: MessageSurfaceId
+        get() = data.surface
+
+    val isExpired: Boolean
+        get() = metadata.displayCount >= maxDisplayCount
+
     /**
      * A data class that holds metadata that help to identify if a message should shown.
      *
@@ -41,6 +48,8 @@ data class Message(
      * @param pressed Indicates if a message has been clicked.
      * @param dismissed Indicates if a message has been closed.
      * @param lastTimeShown A timestamp indicating when was the last time, the message was shown.
+     * @param latestBootIdentifier A unique boot identifier for when the message was last displayed
+     * (this may be a boot count or a boot id).
      */
     data class Metadata(
         val id: String,
@@ -48,5 +57,6 @@ data class Message(
         val pressed: Boolean = false,
         val dismissed: Boolean = false,
         val lastTimeShown: Long = 0L,
+        val latestBootIdentifier: String? = null,
     )
 }

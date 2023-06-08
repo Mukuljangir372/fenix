@@ -9,16 +9,13 @@ jobs:
           type: decision-task
           treeherder-symbol: Nd
           target-tasks-method: nightly
-      when:
-          - {hour: 5, minute: 0}
-          - {hour: 17, minute: 0}
+      when: []
     - name: nightly-test
       job:
           type: decision-task
           treeherder-symbol: Nt
           target-tasks-method: nightly-test
-      when:
-        - {hour: 5, minute: 0}
+      when: []
     - name: fennec-production
       job:
           type: decision-task
@@ -30,10 +27,10 @@ jobs:
           type: decision-task
           treeherder-symbol: screenshots-D
           target-tasks-method: screenshots
-      when: [{weekday: 'Monday', hour: 10, minute: 0}]
+      when: []
     - name: legacy-api-ui-tests
       job:
           type: decision-task
           treeherder-symbol: legacy-api-ui
           target-tasks-method: legacy_api_ui_tests
-      when: [] # temporarily unscheduled
+      when: []

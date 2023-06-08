@@ -34,6 +34,10 @@
         app:destination="@id/homeOnboardingDialogFragment" />
 
     <action
+        android:id="@+id/action_global_home_notification_permission_dialog"
+        app:destination="@id/homeNotificationPermissionDialogFragment" />
+
+    <action
         android:id="@+id/action_global_wallpaper_onboarding_dialog"
         app:destination="@id/wallpaperOnboardingDialogFragment"
         app:popUpTo="@id/homeFragment" />
@@ -197,6 +201,10 @@
         android:name="org.mozilla.fenix.onboarding.HomeOnboardingDialogFragment" />
 
     <dialog
+        android:id="@+id/homeNotificationPermissionDialogFragment"
+        android:name="org.mozilla.fenix.onboarding.HomeNotificationPermissionDialogFragment" />
+
+    <dialog
         android:id="@+id/wallpaperOnboardingDialogFragment"
         android:name="org.mozilla.fenix.onboarding.WallpaperOnboardingDialogFragment" />
 
@@ -259,6 +267,9 @@
         <action
             android:id="@+id/action_browserFragment_to_quickSettingsSheetDialogFragment"
             app:destination="@id/quickSettingsSheetDialogFragment" />
+        <action
+            android:id="@+id/action_browserFragment_to_cookieBannerDialogFragment"
+            app:destination="@id/cookieBannerDialogFragment" />
     </fragment>
 
     <fragment
@@ -806,7 +817,15 @@
     <fragment
         android:id="@+id/secretSettingsPreference"
         android:name="org.mozilla.fenix.settings.SecretSettingsFragment"
-        android:label="@string/preferences_debug_settings" />
+        android:label="@string/preferences_debug_settings">
+        <action
+            android:id="@+id/action_secretSettingsFragment_to_sponsoredStoriesSettings"
+            app:destination="@id/sponsoredStoriesSettings"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
     <fragment
         android:id="@+id/secretInfoSettingsFragment"
         android:name="org.mozilla.fenix.settings.SecretDebugSettingsFragment"
@@ -831,6 +850,10 @@
         android:id="@+id/cookieBannerFragment"
         android:name="org.mozilla.fenix.settings.CookieBannersFragment"
         android:label="@string/preferences_cookie_banner_reduction" />
+    <fragment
+        android:id="@+id/sponsoredStoriesSettings"
+        android:name="org.mozilla.fenix.settings.SponsoredStoriesSettingsFragment"
+        android:label="@string/preferences_debug_settings_custom_sponsored_stories_parameters" />
     <fragment
         android:id="@+id/trackingProtectionFragment"
         android:name="org.mozilla.fenix.settings.TrackingProtectionFragment">
@@ -960,6 +983,9 @@
             android:name="isCookieHandlingEnabled"
             app:argType="boolean" />
     </dialog>
+    <dialog
+        android:id="@+id/cookieBannerDialogFragment"
+        android:name="org.mozilla.fenix.settings.quicksettings.protections.cookiebanners.dialog.CookieBannerReEngagementDialog" />
     <fragment
         android:id="@+id/accountProblemFragment"
         android:name="org.mozilla.fenix.settings.account.AccountProblemFragment">

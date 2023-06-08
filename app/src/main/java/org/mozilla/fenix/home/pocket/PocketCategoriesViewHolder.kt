@@ -4,7 +4,6 @@
 
 package org.mozilla.fenix.home.pocket
 
-import android.content.res.Configuration
 import android.view.View
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
@@ -15,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
@@ -23,6 +21,8 @@ import mozilla.components.lib.state.ext.observeAsComposableState
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.components
 import org.mozilla.fenix.compose.ComposeViewHolder
+import org.mozilla.fenix.compose.SelectableChipColors
+import org.mozilla.fenix.compose.annotation.LightDarkPreview
 import org.mozilla.fenix.compose.home.HomeSectionHeader
 import org.mozilla.fenix.theme.FirefoxTheme
 import org.mozilla.fenix.wallpapers.WallpaperState
@@ -61,7 +61,7 @@ class PocketCategoriesViewHolder(
             .observeAsComposableState { state -> state.wallpaperState }.value ?: WallpaperState.default
 
         var (selectedBackgroundColor, unselectedBackgroundColor, selectedTextColor, unselectedTextColor) =
-            PocketStoriesCategoryColors.buildColors()
+            SelectableChipColors.buildColors()
         wallpaperState.composeRunIfWallpaperCardColorsAreAvailable { cardColorLight, cardColorDark ->
             if (isSystemInDarkTheme()) {
                 selectedBackgroundColor = cardColorDark
@@ -76,7 +76,7 @@ class PocketCategoriesViewHolder(
             }
         }
 
-        val categoryColors = PocketStoriesCategoryColors(
+        val categoryColors = SelectableChipColors(
             selectedTextColor = selectedTextColor,
             unselectedTextColor = unselectedTextColor,
             selectedBackgroundColor = selectedBackgroundColor,
@@ -106,7 +106,7 @@ class PocketCategoriesViewHolder(
 private fun PocketTopics(
     categories: List<PocketRecommendedStoriesCategory> = emptyList(),
     categoriesSelections: List<PocketRecommendedStoriesSelectedCategory> = emptyList(),
-    categoryColors: PocketStoriesCategoryColors = PocketStoriesCategoryColors.buildColors(),
+    categoryColors: SelectableChipColors = SelectableChipColors.buildColors(),
     onCategoryClick: (PocketRecommendedStoriesCategory) -> Unit,
 ) {
     Column {
@@ -127,8 +127,7 @@ private fun PocketTopics(
 }
 
 @Composable
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
+@LightDarkPreview
 private fun PocketCategoriesViewHolderPreview() {
     FirefoxTheme {
         PocketTopics(
